@@ -1,3 +1,5 @@
+package src;
+
 import javax.swing.*;
 import javax.sound.midi.*;
 import java.awt.*;
@@ -5,29 +7,26 @@ import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VisualGuitarKeyboard extends JFrame
-{
+public class VisualGuitarKeyboard extends JFrame {
 
     // ================= MIDI =================
 
     private Synthesizer synth;
     private MidiChannel channel;
 
-    // Currently held note (-1 = none)
     private int heldNote = -1;
+    private int volume = 0; // 0–100
 
-    // Keyboard key → MIDI note
+    private boolean volumeMode = false;
+
     private final Map<Character, Integer> keyMap = new HashMap<>();
-
-    // Keyboard key → screen rectangle (for highlighting)
     private final Map<Character, Rectangle> keyRects = new HashMap<>();
 
     // ================= CONSTRUCTOR =================
 
-    public VisualGuitarKeyboard()
-    {
-        setTitle("Guiano"); //window name
-        setSize(750, 420); //set window size
+    public VisualGuitarKeyboard() {
+        setTitle("Guitar + Piano Instrument");
+        setSize(730, 460);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -35,57 +34,78 @@ public class VisualGuitarKeyboard extends JFrame
         setupKeyMap();
         setupKeyboardInput();
 
+        add(createTopBar(), BorderLayout.NORTH);
         add(new GuitarPanel(), BorderLayout.WEST);
         add(new PianoPanel(), BorderLayout.CENTER);
     }
 
-    // ================= MIDI SETUP =================
+    // ================= TOP BAR =================
 
-    private void setupMidi()
-    {
-        try //using base synth set-up for now before Alan is ready.
-        {
+    private JPanel createTopBar() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        JLabel modeLabel = new JLabel("Mode:");
+        JComboBox<String> modeSelect = new JComboBox<>(
+                new String[]{"Play Mode", "Volume Mode"}
+        );
+
+        JLabel volumeLabel = new JLabel("Volume: 0");
+
+        modeSelect.addActionListener(e -> {
+            volumeMode = modeSelect.getSelectedIndex() == 1;
+        });
+
+        // Update volume label globally
+        Timer labelTimer = new Timer(100, e ->
+                volumeLabel.setText("Volume: " + volume)
+        );
+        labelTimer.start();
+
+        panel.add(modeLabel);
+        panel.add(modeSelect);
+        panel.add(Box.createHorizontalStrut(20));
+        panel.add(volumeLabel);
+
+        return panel;
+    }
+
+    // ================= MIDI =================
+
+    private void setupMidi() {
+        try {
             synth = MidiSystem.getSynthesizer();
             synth.open();
             channel = synth.getChannels()[0];
-            channel.programChange(0); // Acoustic piano
-        } catch (Exception e)
-        {
+            channel.programChange(0);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // ================= KEYBOARD → NOTE MAP =================
+    // ================= KEY MAP =================
 
-    private void setupKeyMap()
-    {
-        String keys = "zsxdcvgbhnjmq2w3er5t6y7u"; //numbers and middle row of keys are black keys, top and bottom row of keys are white.
-        int note = 60; // 60 = Middle C
+    private void setupKeyMap() {
+        String keys = "zsxdcvgbhnjmq2w3er5t6y7u";
+        int note = 60;
 
-        for (char c : keys.toCharArray())
-        {
+        for (char c : keys.toCharArray()) {
             keyMap.put(c, note++);
         }
     }
 
     // ================= KEYBOARD INPUT =================
 
-    private void setupKeyboardInput() // grabs key input, converts to lowercase to read (so it works with capslock) then changes key colour to highlight pressed key
-    {
+    private void setupKeyboardInput() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                .addKeyEventDispatcher(e ->
-                {
+                .addKeyEventDispatcher(e -> {
                     char k = Character.toLowerCase(e.getKeyChar());
                     if (!keyMap.containsKey(k)) return false;
 
-                    if (e.getID() == KeyEvent.KEY_PRESSED)
-                    {
+                    if (e.getID() == KeyEvent.KEY_PRESSED) {
                         heldNote = keyMap.get(k);
                         repaint();
-                    } else if (e.getID() == KeyEvent.KEY_RELEASED)
-                    {
-                        if (heldNote == keyMap.get(k))
-                        {
+                    } else if (e.getID() == KeyEvent.KEY_RELEASED) {
+                        if (heldNote == keyMap.get(k)) {
                             heldNote = -1;
                             repaint();
                         }
@@ -94,169 +114,175 @@ public class VisualGuitarKeyboard extends JFrame
                 });
     }
 
-    // ================= PLAY NOTE (PLUCK) =================
+    // ================= NOTE / VOLUME HANDLER =================
 
-    private void pluckString()
-    {
+    private void handleStringHit() {
         if (heldNote == -1) return;
 
-        channel.noteOn(heldNote, 90);
+        if (volumeMode) {
+            applyVolumeChange(heldNote);
+            return;
+        }
 
-        // Swing-safe timer (IMPORTANT)
-        new javax.swing.Timer(9900, e -> channel.noteOff(heldNote)).start(); // how long a note rings for
+        int velocity = (int) (volume * 1.27);
+        channel.noteOn(heldNote, velocity);
+        new javax.swing.Timer(200,
+                e -> channel.noteOff(heldNote)).start();
+    }
+
+    // ================= VOLUME MODE LOGIC =================
+
+    private void applyVolumeChange(int midiNote) {
+        int noteClass = midiNote % 12;
+
+        int hexValue = switch (noteClass) {
+            case 0 -> 13;  // C
+            case 1 -> 13;  // C#
+            case 2 -> 14;  // D
+            case 3 -> 14;  // D#
+            case 4 -> 15;   // E
+            case 5 -> 16;   // F
+            case 6 -> 16;   // F#
+            case 7 -> 17;   // G
+            case 8 -> 17;   // G#
+            case 9 -> 11;   // A
+            case 10 -> 11;  // A#
+            case 11 -> 12;  // B
+            default -> 0;
+        };
+
+        volume += hexValue;
+
+        if (volume > 100) {
+            volume = 0;
+        }
     }
 
     // ================= GUITAR PANEL =================
 
-    class GuitarPanel extends JPanel
-    {
+    class GuitarPanel extends JPanel {
 
-        GuitarPanel()
-        {
-            setPreferredSize(new Dimension(280, 420)); //guitar half of window
-            addMouseListener(new MouseAdapter()
-            {
+        private final int STRING_COUNT = 5;
+        private final int FIRST_Y = 100;
+        private final int SPACING = 55;
+        private int lastString = -1;
+
+        GuitarPanel() {
+            setPreferredSize(new Dimension(280, 420));
+
+            MouseAdapter mouse = new MouseAdapter() {
                 @Override
-                public void mousePressed(MouseEvent e)
-                {
-                    pluckString(); // press string to play, can later be changed to be held to allow strumming
+                public void mousePressed(MouseEvent e) {
+                    handle(e.getY());
                 }
-            });
+
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    handle(e.getY());
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    lastString = -1;
+                }
+            };
+
+            addMouseListener(mouse);
+            addMouseMotionListener(mouse);
+        }
+
+        private void handle(int y) {
+            for (int i = 0; i < STRING_COUNT; i++) {
+                int sy = FIRST_Y + i * SPACING;
+                if (Math.abs(y - sy) <= 8 && lastString != i) {
+                    lastString = i;
+                    handleStringHit();
+                    return;
+                }
+            }
         }
 
         @Override
-        protected void paintComponent(Graphics g)
-        {
+        protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-
             Graphics2D g2 = (Graphics2D) g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Wooden coloured background of guitar (AI made it so feel free to change lol)
-            g2.setColor(new Color(95, 60, 30));
+            g2.setColor(new Color(90, 60, 30));
             g2.fillRect(0, 0, getWidth(), getHeight());
 
-            // Draw strings
             g2.setColor(Color.LIGHT_GRAY);
-
-            for (int i = 0; i < 5; i++) //make 5 strings that get progressively larger
-            {                           // could later be randomised to be funny
-                int y = 80 + i * 60;
+            for (int i = 0; i < STRING_COUNT; i++) {
+                int y = FIRST_Y + i * SPACING;
                 g2.setStroke(new BasicStroke(2 + i));
                 g2.drawLine(20, y, getWidth() - 20, y);
             }
 
-            g2.setColor(Color.WHITE); // text above guitar strings
-            g2.setFont(new Font("SansSerif", Font.BOLD, 14));
-            g2.drawString("Click a string to pluck", 50, 40);
+            g2.setColor(Color.WHITE);
+            g2.drawString(
+                    volumeMode ?
+                            "Volume Mode: Strum to add hex values"
+                            : "Play Mode: Click or drag to strum",
+                    25, 40
+            );
         }
     }
 
     // ================= PIANO PANEL =================
 
-    class PianoPanel extends JPanel
-    {
+    class PianoPanel extends JPanel {
 
-        PianoPanel()
-        {
-            setBackground(Color.DARK_GRAY); //piano half background colour
+        PianoPanel() {
+            setBackground(Color.DARK_GRAY);
         }
 
         @Override
-        protected void paintComponent(Graphics g)
-        {
+        protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             keyRects.clear();
-
             Graphics2D g2 = (Graphics2D) g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Draw higher octave on top
-            drawOctave(
-                    g2,
-                    "q2w3er5t6y7u", //top octave keys
-                    40,
-                    30
-            );
+            drawOctave(g2, "q2w3er5t6y7u", 40, 30);
+            drawOctave(g2, "zsxdcvgbhnjm", 40, 210);
 
-            // Draw lower octave below
-            drawOctave(
-                    g2,
-                    "zsxdcvgbhnjm", // bottom octave keys
-                    40,
-                    210
-            );
-
-            // Highlight held key
-            if (heldNote != -1)
-            {
-                for (var entry : keyRects.entrySet())
-                {
-                    if (keyMap.get(entry.getKey()) == heldNote)
-                    {
-                        g2.setColor(new Color(255, 0, 0, 110)); //set colour of the current held key
-                        g2.fill(entry.getValue());
+            if (heldNote != -1) {
+                keyRects.forEach((k, r) -> {
+                    if (keyMap.get(k) == heldNote) {
+                        g2.setColor(new Color(255, 0, 0, 120));
+                        g2.fill(r);
                     }
-                }
+                });
             }
         }
 
-        // -------- Draw One Octave --------
+        private void drawOctave(Graphics2D g2, String keys, int x0, int y0) {
+            int wW = 50, wH = 140, bW = 30, bH = 90;
+            int[] wIdx = {0,2,4,5,7,9,11};
+            int[] bIdx = {1,3,-1,6,8,10};
 
-        private void drawOctave(Graphics2D g2, String keys, int startX, int startY) // self explainatory graphic code (fuck you my spelling is perfect.)
-        {
-            int whiteW = 50;
-            int whiteH = 140;
-            int blackW = 30;
-            int blackH = 90;
+            int x = x0;
 
-            int[] whiteKeyIndices = {0, 2, 4, 5, 7, 9, 11};
-            int[] blackKeyIndices = {1, 3, -1, 6, 8, 10};
-
-            int x = startX;
-
-            // White keys
-            for (int i : whiteKeyIndices)
-            {
+            for (int i : wIdx) {
                 char k = keys.charAt(i);
-
                 g2.setColor(Color.WHITE);
-                g2.fillRect(x, startY, whiteW, whiteH);
+                g2.fillRect(x, y0, wW, wH);
                 g2.setColor(Color.BLACK);
-                g2.drawRect(x, startY, whiteW, whiteH);
-
-                keyRects.put(k, new Rectangle(x, startY, whiteW, whiteH));
-
-                g2.drawString(
-                        String.valueOf(Character.toUpperCase(k)),
-                        x + whiteW / 2 - 4,
-                        startY + whiteH - 10
-                );
-
-                x += whiteW;
+                g2.drawRect(x, y0, wW, wH);
+                keyRects.put(k, new Rectangle(x, y0, wW, wH));
+                g2.drawString("" + Character.toUpperCase(k), x + 22, y0 + 130);
+                x += wW;
             }
 
-            // Black keys
-            x = startX + whiteW - blackW / 2;
-
-            for (int i : blackKeyIndices)
-            {
-                if (i == -1)
-                {
-                    x += whiteW;
+            x = x0 + wW - bW / 2;
+            for (int i : bIdx) {
+                if (i == -1) {
+                    x += wW;
                     continue;
                 }
-
                 char k = keys.charAt(i);
-
                 g2.setColor(Color.BLACK);
-                g2.fillRect(x, startY, blackW, blackH);
-
-                keyRects.put(k, new Rectangle(x, startY, blackW, blackH));
-
-                x += whiteW;
+                g2.fillRect(x, y0, bW, bH);
+                keyRects.put(k, new Rectangle(x, y0, bW, bH));
+                x += wW;
             }
         }
     }
@@ -265,7 +291,7 @@ public class VisualGuitarKeyboard extends JFrame
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() ->
-                new VisualGuitarKeyboard().setVisible(true) //creates the instance of the piano-guitar
+                new VisualGuitarKeyboard().setVisible(true)
         );
     }
 }
