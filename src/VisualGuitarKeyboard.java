@@ -7,7 +7,8 @@ import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VisualGuitarKeyboard extends JFrame {
+public class VisualGuitarKeyboard extends JFrame
+{
 
     // ================= MIDI =================
 
@@ -24,7 +25,8 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= CONSTRUCTOR =================
 
-    public VisualGuitarKeyboard() {
+    public VisualGuitarKeyboard()
+    {
         setTitle("Guitar + Piano Instrument");
         setSize(730, 460);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -41,7 +43,8 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= TOP BAR =================
 
-    private JPanel createTopBar() {
+    private JPanel createTopBar()
+    {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         JLabel modeLabel = new JLabel("Mode:");
@@ -51,7 +54,8 @@ public class VisualGuitarKeyboard extends JFrame {
 
         JLabel volumeLabel = new JLabel("Volume: 0");
 
-        modeSelect.addActionListener(e -> {
+        modeSelect.addActionListener(e ->
+        {
             volumeMode = modeSelect.getSelectedIndex() == 1;
         });
 
@@ -71,24 +75,29 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= MIDI =================
 
-    private void setupMidi() {
-        try {
+    private void setupMidi()
+    {
+        try
+        {
             synth = MidiSystem.getSynthesizer();
             synth.open();
             channel = synth.getChannels()[0];
             channel.programChange(0);
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
 
     // ================= KEY MAP =================
 
-    private void setupKeyMap() {
+    private void setupKeyMap()
+    {
         String keys = "zsxdcvgbhnjmq2w3er5t6y7u";
         int note = 60;
 
-        for (char c : keys.toCharArray()) {
+        for (char c : keys.toCharArray())
+        {
             keyMap.put(c, note++);
         }
     }
