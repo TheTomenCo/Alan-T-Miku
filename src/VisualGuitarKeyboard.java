@@ -46,7 +46,7 @@ public class VisualGuitarKeyboard extends JFrame {
         JComboBox<String> modeSelect = new JComboBox<>(
                 new String[]{"Play Mode", "Volume Mode"}
         );
-
+        
         JLabel volumeLabel = new JLabel("Volume: 0");
 
         modeSelect.addActionListener(e -> {
