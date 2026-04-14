@@ -123,7 +123,7 @@ public class PreAmp extends JFrame{
         button.addActionListener(e -> {
             System.out.println(selectedPort);
             System.out.println(ID);
-            if (selectedCable[1].equals(type) && selectedPort != ID && selectedPort != -1 && !connections.containsValue(ID)){
+            if (selectedCable[1].equals(type) && selectedPort != ID && selectedPort != -1 && !connections.containsValue(ID) && !connections.containsKey(ID)){
                 connections.put(selectedPort, ID);
             }
             else if (selectedCable[0].equals(type)){
