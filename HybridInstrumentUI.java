@@ -10,7 +10,7 @@ public class HybridInstrumentUI extends JPanel{
     public static void main(String[] args) {
         JFrame frame = new JFrame("Hybrid Piano + Guitar");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(900,600);
+        frame.setSize(1200,600);
         frame.add(new HybridInstrumentUI());
         frame.setVisible(true);
     }
@@ -19,8 +19,8 @@ public class HybridInstrumentUI extends JPanel{
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-        drawGuitar(g, 50, 50, 800, 120);
-        drawPiano(g, 50, 220, 800, 300);
+        drawGuitar(g, 0, 0, 700, 600);
+        drawPiano(g, 700, 0, 500, 600);
     }
 
     //GUITAR
@@ -33,26 +33,24 @@ public class HybridInstrumentUI extends JPanel{
         int stringCount = 5;
         int spacing = height / (stringCount + 1);
 
-        for(int i = 1; i <= stringCount; i++){
-            int yPos = y + i * spacing;
-            g.drawLine(x + 10 , yPos, x + width - 10 , yPos);
-        }
-
-        g.setFont(new Font("Arial", Font.BOLD,16));
-        g.drawString("5-String Guitar", x + 10, y - 10);    
+    for(int i = 1; i <= stringCount; i++){
+        int yPos = y + i * spacing;
+        g.drawLine(x + 10 , yPos, x + width - 10 , yPos);
     }
+}
 
-    //PIANO 
+//PIANO 
+
     private void drawPiano(Graphics g, int x, int y, int width, int height){
-        int octaves = 2;
-        int whiteKeysPerOctave = 7;
-        int totalWhiteKeys = octaves * whiteKeysPerOctave; 
+        int octaves = 1; //number of octaves to draw horizontally, in this case its one 
+        int whiteKeysPerOctave = 7; //C D E F G A B
+        int totalWhiteKeys = octaves * whiteKeysPerOctave; //total number of white keys to draw
 
         int whiteKeyWidth = width / totalWhiteKeys;
         int whiteKeyHeight = height;
 
-        //Drawing the white keys and stacking them on top of each other
-        for(int tier = 0; tier < 2; tier++) {
+
+        for(int tier = 0; tier < 2; tier++) { //
             int yOffset = y + tier * (whiteKeyHeight / 2);
 
             for (int i = 0; i < totalWhiteKeys; i++) {
@@ -64,22 +62,22 @@ public class HybridInstrumentUI extends JPanel{
             }
         }
 
-        //drawing the black keys only on the top tier :P
+ 
         int[] blackKeyOffsets = {1, 2, 4, 5, 6};
         int blackKeyWidth = (int)(whiteKeyWidth * 0.6);
         int blackKeyHeight = (int)(whiteKeyHeight / 2)/2;
-
+        for(int tier = 0; tier < 2; tier++) { 
+            int yOffset = y + tier * (whiteKeyHeight / 2);
         for (int octave = 0; octave < octaves; octave++) {
             for ( int offset : blackKeyOffsets) {
                 int keyIndex = octave * whiteKeysPerOctave + offset;
                 int xPos = x + keyIndex * whiteKeyWidth - blackKeyWidth / 2;
 
                 g.setColor(Color.BLACK);
-                g.fillRect(xPos, y, blackKeyWidth, blackKeyHeight);
+                g.fillRect(xPos, yOffset, blackKeyWidth, blackKeyHeight);
 
             }
         }
-        g.setFont( new Font("Arial", Font.BOLD,16));
-        g.drawString("Two-Tier, Two-Octave Piano", x + 10, y - 10);
+    }
     }
 }
