@@ -193,6 +193,7 @@ public class VisualGuitarKeyboard extends JFrame {
                 int sy = FIRST_Y + i * SPACING;
                 if (Math.abs(y - sy) <= 8 && lastString != i) {
                     lastString = i;
+                    super.repaint();
                     handleStringHit();
                     return;
                 }
