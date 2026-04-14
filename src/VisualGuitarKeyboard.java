@@ -5,8 +5,7 @@ import java.util.Map;
 import javax.sound.midi.*;
 import javax.swing.*;
 
-public class VisualGuitarKeyboard extends JFrame
-{
+public class VisualGuitarKeyboard extends JFrame {
 
     // ================= MIDI =================
 
@@ -23,8 +22,7 @@ public class VisualGuitarKeyboard extends JFrame
 
     // ================= CONSTRUCTOR =================
 
-    public VisualGuitarKeyboard()
-    {
+    public VisualGuitarKeyboard() {
         setTitle("Guitar + Piano Instrument");
         setSize(730, 460);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -41,26 +39,21 @@ public class VisualGuitarKeyboard extends JFrame
 
     // ================= TOP BAR =================
 
-    private JPanel createTopBar()
-    {
+    private JPanel createTopBar() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         JLabel modeLabel = new JLabel("Mode:");
         JComboBox<String> modeSelect = new JComboBox<>(
-                new String[]{"Play Mode", "Volume Mode"}
-        );
-        
+                new String[] { "Play Mode", "Volume Mode" });
+
         JLabel volumeLabel = new JLabel("Volume: 0");
 
-        modeSelect.addActionListener(e ->
-        {
+        modeSelect.addActionListener(e -> {
             volumeMode = modeSelect.getSelectedIndex() == 1;
         });
 
         // Update volume label globally
-        Timer labelTimer = new Timer(100, e ->
-                volumeLabel.setText("Volume: " + volume)
-        );
+        Timer labelTimer = new Timer(100, e -> volumeLabel.setText("Volume: " + volume));
         labelTimer.start();
 
         panel.add(modeLabel);
@@ -73,29 +66,24 @@ public class VisualGuitarKeyboard extends JFrame
 
     // ================= MIDI =================
 
-    private void setupMidi()
-    {
-        try
-        {
+    private void setupMidi() {
+        try {
             synth = MidiSystem.getSynthesizer();
             synth.open();
             channel = synth.getChannels()[0];
             channel.programChange(0);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     // ================= KEY MAP =================
 
-    private void setupKeyMap()
-    {
+    private void setupKeyMap() {
         String keys = "zsxdcvgbhnjmq2w3er5t6y7u";
         int note = 60;
 
-        for (char c : keys.toCharArray())
-        {
+        for (char c : keys.toCharArray()) {
             keyMap.put(c, note++);
         }
     }
@@ -106,7 +94,8 @@ public class VisualGuitarKeyboard extends JFrame
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
                 .addKeyEventDispatcher(e -> {
                     char k = Character.toLowerCase(e.getKeyChar());
-                    if (!keyMap.containsKey(k)) return false;
+                    if (!keyMap.containsKey(k))
+                        return false;
 
                     if (e.getID() == KeyEvent.KEY_PRESSED) {
                         heldNote = keyMap.get(k);
@@ -124,7 +113,8 @@ public class VisualGuitarKeyboard extends JFrame
     // ================= NOTE / VOLUME HANDLER =================
 
     private void handleStringHit() {
-        if (heldNote == -1) return;
+        if (heldNote == -1)
+            return;
 
         if (volumeMode) {
             applyVolumeChange(heldNote);
@@ -143,18 +133,18 @@ public class VisualGuitarKeyboard extends JFrame
         int noteClass = midiNote % 12;
 
         int hexValue = switch (noteClass) {
-            case 0 -> 13;  // C
-            case 1 -> 13;  // C#
-            case 2 -> 14;  // D
-            case 3 -> 14;  // D#
-            case 4 -> 15;   // E
-            case 5 -> 16;   // F
-            case 6 -> 16;   // F#
-            case 7 -> 17;   // G
-            case 8 -> 17;   // G#
-            case 9 -> 11;   // A
-            case 10 -> 11;  // A#
-            case 11 -> 12;  // B
+            case 0 -> 13; // C
+            case 1 -> 13; // C#
+            case 2 -> 14; // D
+            case 3 -> 14; // D#
+            case 4 -> 15; // E
+            case 5 -> 16; // F
+            case 6 -> 16; // F#
+            case 7 -> 17; // G
+            case 8 -> 17; // G#
+            case 9 -> 11; // A
+            case 10 -> 11; // A#
+            case 11 -> 12; // B
             default -> 0;
         };
 
@@ -220,17 +210,19 @@ public class VisualGuitarKeyboard extends JFrame
             g2.setColor(Color.LIGHT_GRAY);
             for (int i = 0; i < STRING_COUNT; i++) {
                 int y = FIRST_Y + i * SPACING;
+                if (i == lastString) {
+                    g2.setColor(Color.WHITE);
+                }
                 g2.setStroke(new BasicStroke(2 + i));
                 g2.drawLine(20, y, getWidth() - 20, y);
+                g2.setColor(Color.LIGHT_GRAY);
             }
 
             g2.setColor(Color.WHITE);
             g2.drawString(
-                    volumeMode ?
-                            "Volume Mode: Strum to add hex values"
+                    volumeMode ? "Volume Mode: Strum to add hex values"
                             : "Play Mode: Click or drag to strum",
-                    25, 40
-            );
+                    25, 40);
         }
     }
 
@@ -263,8 +255,8 @@ public class VisualGuitarKeyboard extends JFrame
 
         private void drawOctave(Graphics2D g2, String keys, int x0, int y0) {
             int wW = 50, wH = 140, bW = 30, bH = 90;
-            int[] wIdx = {0,2,4,5,7,9,11};
-            int[] bIdx = {1,3,-1,6,8,10};
+            int[] wIdx = { 0, 2, 4, 5, 7, 9, 11 };
+            int[] bIdx = { 1, 3, -1, 6, 8, 10 };
 
             int x = x0;
 
@@ -297,8 +289,6 @@ public class VisualGuitarKeyboard extends JFrame
     // ================= MAIN =================
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() ->
-                new VisualGuitarKeyboard().setVisible(true)
-        );
+        SwingUtilities.invokeLater(() -> new VisualGuitarKeyboard().setVisible(true));
     }
 }
