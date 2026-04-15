@@ -11,7 +11,6 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= MIDI =================
 
-    private Synthesizer synth;
     private MidiChannel channel;
 
     private int heldNote = -1;
@@ -50,7 +49,8 @@ public class VisualGuitarKeyboard extends JFrame {
 
         JLabel volumeLabel = new JLabel("Volume: 0");
 
-        modeSelect.addActionListener(e -> {
+        modeSelect.addActionListener(e ->
+        {
             volumeMode = modeSelect.getSelectedIndex() == 1;
         });
 
@@ -68,13 +68,17 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= MIDI =================
 
-    private void setupMidi() {
-        try {
-            synth = MidiSystem.getSynthesizer();
+    private void setupMidi()
+    {
+
+        try
+        {
+            Synthesizer synth = MidiSystem.getSynthesizer();
             synth.open();
             channel = synth.getChannels()[0];
             channel.programChange(0);
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
