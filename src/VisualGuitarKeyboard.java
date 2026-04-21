@@ -1,11 +1,11 @@
-package src;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 import javax.sound.midi.*;
 import javax.swing.*;
+import javax.sound.sampled.*;
+import java.io.File;
 
 public class VisualGuitarKeyboard extends JFrame {
 
@@ -298,4 +298,98 @@ public class VisualGuitarKeyboard extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new VisualGuitarKeyboard().setVisible(true));
     }
+
+
+    // ================= JUMPSCARE FEATURE =================
+
+public class JumpScare extends JFrame {
+
+    private Clip clip;
+    private static final double JUMPSCARE_CHANCE = 0.01;
+
+    public JumpScare() {
+        loadSound("sound.wav");
+
+        setUndecorated(true);
+        setSize(1, 1);
+        setOpacity(0f);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        addKeyListener(new KeyAdapter(){
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() !=KeyEvent.VK_Z) return;
+
+                if(Math.random() < JUMPSCARE_CHANCE) {
+                    playSound();
+                    showGif();
+                }
+            }
+        });
+
+        setVisible(true);
+    }
+
+    //---Loads the sound at 4x speed bc the original file is too long---//
+    private void loadSound(String path) {
+        try{
+            AudioInputStream original = AudioSystem.getAudioInputStream(new File(path));
+            AudioFormat base = original.getFormat();
+
+            AudioFormat fast = new AudioFormat(
+                base.getEncoding (),
+                base.getSampleRate()*4,
+                base.getSampleSizeInBits(),
+                base.getChannels(),
+                base.getFrameSize(),
+                base.getFrameRate() * 4,
+                base.isBigEndian()
+            );
+
+            AudioInputStream fastStream = AudioSystem.getAudioInputStream(fast, original);
+
+            clip = AudioSystem.getClip();
+            clip.open(fastStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void playSound() {
+        if (clip.isRunning()) clip.stop();
+        clip.setFramePosition(0);
+        clip.start();
+    }
+
+    //---Stretches the jumpscare gif to fill the entire screen---//
+
+    private void showGif() {
+        JFrame gifFrame = new JFrame();
+        gifFrame.setUndecorated(true);
+        gifFrame.setAlwaysOnTop(true);
+        gifFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        ImageIcon icon = new ImageIcon("jumpscare.gif");
+
+        JPanel panel = new JPanel() {
+            @Override 
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawImage(icon.getImage(),0,0, getWidth(), getHeight(), this);
+
+            }
+        };
+
+        gifFrame.add(panel);
+        gifFrame.setVisible(true);
+
+        new Timer(30, e -> panel.repaint()).start();
+        new Timer(2000,e-> gifFrame.dispose()).start();
+    }
+
+    
+    }
+    
 }
+
+
