@@ -20,6 +20,7 @@ public class VisualGuitarKeyboard extends JFrame {
 
     private final Map<Character, Integer> keyMap = new HashMap<>();
     private final Map<Character, Rectangle> keyRects = new HashMap<>();
+    private final Map<Integer, Integer> offsetCounts = new HashMap<>();
 
     // ================= CONSTRUCTOR =================
 
@@ -49,8 +50,7 @@ public class VisualGuitarKeyboard extends JFrame {
 
         JLabel volumeLabel = new JLabel("Volume: 0");
 
-        modeSelect.addActionListener(e ->
-        {
+        modeSelect.addActionListener(e -> {
             volumeMode = modeSelect.getSelectedIndex() == 1;
         });
 
@@ -68,17 +68,14 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= MIDI =================
 
-    private void setupMidi()
-    {
+    private void setupMidi() {
 
-        try
-        {
+        try {
             Synthesizer synth = MidiSystem.getSynthesizer();
             synth.open();
             channel = synth.getChannels()[0];
             channel.programChange(0);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -284,10 +281,18 @@ public class VisualGuitarKeyboard extends JFrame {
                     x += wW;
                     continue;
                 }
+                int offsetX = (int) (Math.random() * 16 - 8); // between -7 and 7 (inclusive)
+                offsetCounts.put(offsetX, offsetCounts.getOrDefault(offsetX, 0) + 1);
+                // System.out.println("Offset Counts:");
+                // for (int o = -10; o <= 10; o++) {
+                // int count = offsetCounts.getOrDefault(o, 0);
+                // System.out.println(o + ": " + count);
+                // }
+
                 char k = keys.charAt(i);
                 g2.setColor(Color.BLACK);
-                g2.fillRect(x, y0, bW, bH);
-                keyRects.put(k, new Rectangle(x, y0, bW, bH));
+                g2.fillRect(x + offsetX, y0, bW, bH + offsetX);
+                keyRects.put(k, new Rectangle(x + offsetX, y0, bW, bH + offsetX));
                 x += wW;
             }
         }
