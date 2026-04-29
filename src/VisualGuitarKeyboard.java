@@ -3,7 +3,9 @@ package src;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.sound.midi.*;
 import javax.swing.*;
 
@@ -13,7 +15,7 @@ public class VisualGuitarKeyboard extends JFrame {
 
     private MidiChannel channel;
 
-    private int heldNote = -1;
+    private final Set<Integer> heldNotes = new HashSet<>();
     private int volume = 0; // 0–100
 
     private boolean volumeMode = false;
@@ -100,12 +102,15 @@ public class VisualGuitarKeyboard extends JFrame {
                     if (!keyMap.containsKey(k))
                         return false;
 
+                    int note = keyMap.get(k);
                     if (e.getID() == KeyEvent.KEY_PRESSED) {
-                        heldNote = keyMap.get(k);
-                        repaint();
+                        if (!heldNotes.contains(note)) {
+                            heldNotes.add(note);
+                            repaint();
+                        }
                     } else if (e.getID() == KeyEvent.KEY_RELEASED) {
-                        if (heldNote == keyMap.get(k)) {
-                            heldNote = -1;
+                        if (heldNotes.contains(note)) {
+                            heldNotes.remove(note);
                             repaint();
                         }
                     }
@@ -116,18 +121,25 @@ public class VisualGuitarKeyboard extends JFrame {
     // ================= NOTE / VOLUME HANDLER =================
 
     private void handleStringHit() {
-        if (heldNote == -1)
+        if (heldNotes.isEmpty())
             return;
 
         if (volumeMode) {
-            applyVolumeChange(heldNote);
+            // Only apply volume change to the most recently pressed note
+            int lastNote = heldNotes.stream().reduce((first, second) -> second).orElse(-1);
+            applyVolumeChange(lastNote);
             return;
         }
 
         int velocity = (int) (volume * 1.27);
-        channel.noteOn(heldNote, velocity);
-        new javax.swing.Timer(200,
-                e -> channel.noteOff(heldNote)).start();
+        for (int note : heldNotes) {
+            channel.noteOn(note, velocity);
+        }
+        new javax.swing.Timer(200, e -> {
+            for (int note : heldNotes) {
+                channel.noteOff(note);
+            }
+        }).start();
     }
 
     // ================= VOLUME MODE LOGIC =================
@@ -247,9 +259,10 @@ public class VisualGuitarKeyboard extends JFrame {
             drawOctave(g2, "q2w3er5t6y7u", 40, 30);
             drawOctave(g2, "zsxdcvgbhnjm", 40, 210);
 
-            if (heldNote != -1) {
+            if (!heldNotes.isEmpty()) {
                 keyRects.forEach((k, r) -> {
-                    if (keyMap.get(k) == heldNote) {
+                    Integer note = keyMap.get(k);
+                    if (heldNotes.contains(note)) {
                         g2.setColor(new Color(255, 0, 0, 120));
                         g2.fill(r);
                     }
