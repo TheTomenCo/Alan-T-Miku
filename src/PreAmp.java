@@ -12,6 +12,7 @@ public class PreAmp extends JFrame{
     private String[] cableTypes = {"TRS", "MIDI", "HDMI", "XLR", "RCA"};
     private String[] selectedCable = {"null", "null"};
     private int selectedPort = -1;
+    private int secretNumber;
 
     public PreAmp(){
         setTitle("Pre amp");
@@ -59,7 +60,9 @@ public class PreAmp extends JFrame{
             setLayout(new FlowLayout(FlowLayout.CENTER, 30, 30));
             setBorder(new EmptyBorder(10, 10, 10, 10));
             for (int i = 1; i <= 3; i++) {
-                JButton button = addButton("Button number " + i, new Dimension(50, 50));
+                JButton button = addButton(Integer.toString(i), new Dimension(50, 50));
+                button.setBackground(Color.yellow);
+                button.setForeground(Color.white);
                 String message = "Button number " + i + " clicked!";
                 button.addActionListener(e -> {
                     JOptionPane.showMessageDialog(this, message);
@@ -114,19 +117,21 @@ public class PreAmp extends JFrame{
     
     private JPanel addPort(String name, Dimension size){
         JPanel port = new JPanel();
+        port.setBackground(Color.darkGray);
         JButton button = new JButton();
         Random random = new Random();
         String type = cableTypes[random.nextInt(cableTypes.length)];
         JLabel label = new JLabel(type);
+        label.setForeground(Color.WHITE);
         int ID = ports.size() + 1;
         ports.put(ID, type);
         button.setBackground(new Color(0, 0, 0));
         button.setPreferredSize(size);
         button.addActionListener(e -> {
-            System.out.println(selectedPort);
-            System.out.println(ID);
             if (selectedCable[1].equals(type) && selectedPort != ID && selectedPort != -1 && !connections.containsValue(ID) && !connections.containsKey(ID)){
                 connections.put(selectedPort, ID);
+                selectedCable[0] = "null";
+                selectedCable[1] = "null";
             }
             else if (selectedCable[0].equals(type)){
                 selectedPort = ID;
@@ -144,6 +149,7 @@ public class PreAmp extends JFrame{
             Random random = new Random();
             selectedCable[0] = cableTypes[random.nextInt(cableTypes.length)];
             selectedCable[1] = cableTypes[random.nextInt(cableTypes.length)];
+            selectedPort = -1;
         });
         return button;
     }
