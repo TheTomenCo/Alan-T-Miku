@@ -1,6 +1,7 @@
 package src;
 
 import java.awt.*;
+import java.awt.geom.Line2D;
 import java.util.HashMap;
 import java.util.Random;
 import javax.swing.*;
@@ -14,7 +15,6 @@ public class PreAmp extends JFrame {
     private String[] cableTypes = { "TRS", "MIDI", "HDMI", "XLR", "RCA" };
     private String[] selectedCable = { "null", "null" };
     private int selectedPort = -1;
-    private int secretNumber;
 
     public PreAmp() {
         setTitle("Pre amp");
@@ -69,7 +69,7 @@ public class PreAmp extends JFrame {
         JPanel BottomPanel = new BottomPanel();
         BottomPanel.add(cableLabel);
         add(BottomPanel, c);
-
+        super.paint(getGraphics());
         pack();
     }
 
@@ -81,6 +81,24 @@ public class PreAmp extends JFrame {
         }
     }
 
+    @Override
+    public void paint(Graphics g) {
+        super.paint(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(6));
+        Point p1;
+        Point p2;
+        for (int i = 1; i <= 12; i++) {
+            if (connections.get(i) != null) {
+                g2.setColor(cableColors.get(ports.get(i)));
+                p1 = portButtons.get(connections.get(i)).getLocationOnScreen();
+                p2 = portButtons.get(i).getLocationOnScreen();
+                Line2D lin = new Line2D.Float(p1.x + 15, p1.y + 15, p2.x + 15, p2.y + 15);
+                g2.draw(lin);
+            }
+        }
+    }
+
     class MainPanel extends JPanel {
         MainPanel() {
             setBackground(Color.darkGray);
@@ -88,8 +106,8 @@ public class PreAmp extends JFrame {
             setBorder(new EmptyBorder(10, 10, 10, 10));
             for (int i = 1; i <= 3; i++) {
                 JButton button = addButton(Integer.toString(i), new Dimension(50, 50));
-                button.setBackground(Color.orange);
-                button.setForeground(Color.black);
+                button.setBackground(Color.yellow);
+                button.setForeground(Color.white);
                 String message = "Button number " + i + " clicked!";
                 button.addActionListener(e -> {
                     JOptionPane.showMessageDialog(this, message);
@@ -145,6 +163,7 @@ public class PreAmp extends JFrame {
                 selectedPort = -1;
                 selectedCable[0] = "null";
                 selectedCable[1] = "null";
+                getTopLevelAncestor().repaint();
             });
             add(resetButton, BorderLayout.EAST);
         }
@@ -186,6 +205,7 @@ public class PreAmp extends JFrame {
                 selectedCable[0] = "null";
                 selectedCable[1] = "null";
                 selectedPort = -1;
+                repaint();
             } else if (selectedCable[0].equals(type)) {
                 selectedPort = ID;
             }
