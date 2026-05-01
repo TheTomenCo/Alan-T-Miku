@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.sound.midi.*;
 import javax.swing.*; //java swing for gui like papa Alan asked.
-import java.awt.Color;
-import java.awt.GradientPaint;
 
 public class VisualGuitarKeyboard extends JFrame
         implements javax.swing.event.ChangeListener // JFrame adds support for swing component architecture i.e. lets

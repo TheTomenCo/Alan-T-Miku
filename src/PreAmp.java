@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Random;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
 import src.PreAmp.BottomPanel;
 import src.PreAmp.SecondaryPanel;
 import src.PreAmp.SidePanel;
@@ -19,7 +18,8 @@ public class PreAmp extends JFrame {
     private String[] cableTypes = { "TRS", "MIDI", "HDMI", "XLR", "RCA" };
     private String[] selectedCable = { "null", "null" };
     private int selectedPort = -1;
-    private int secretNumber;
+    private JLabel green = new JLabel("■");
+    private JLabel red = green;
     public static boolean finished = false;
 
     public PreAmp() {
@@ -114,8 +114,17 @@ public class PreAmp extends JFrame {
     class MainPanel extends JPanel {
         MainPanel() {
             setBackground(Color.darkGray);
-            setLayout(new FlowLayout(FlowLayout.CENTER, 30, 30));
+            setLayout(new FlowLayout(FlowLayout.LEFT, 10, 30));
             setBorder(new EmptyBorder(10, 10, 10, 10));
+
+            JLabel label = new JLabel("Inputs: ");
+            label.setForeground(Color.white);
+            add(label);
+            for (int i = 1; i <= 6; i++) {
+                JPanel port = addPort("Input " + i, new Dimension(30, 30));
+                port.setBackground(Color.gray);
+                add(port);
+            }
 
             yeldie = (int) (Math.random() * 6 + 1);
             die = addButton(Integer.toString(yeldie), new Dimension(50, 50));
@@ -153,11 +162,6 @@ public class PreAmp extends JFrame {
                 }
             });
             add(roller);
-
-            for (int i = 1; i <= 6; i++) {
-                JPanel port = addPort("Output " + i, new Dimension(30, 30));
-                add(port);
-            }
         }
     }
 
@@ -165,19 +169,21 @@ public class PreAmp extends JFrame {
         SidePanel() {
             setBackground(Color.lightGray);
             setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-            JButton checkButton = addButton("Check", new Dimension(100, 100));
-            checkButton.addActionListener(e -> {
-                System.out.println(connections);
-                displayConnectionColors();
-            });
-            add(checkButton);
+            green.setForeground(new Color(0, 70, 0));
+            add(green);
+            JLabel red = new JLabel("■");
+            red.setForeground(Color.red);
+            add(red);
         }
     }
 
     class SecondaryPanel extends JPanel {
         public SecondaryPanel() {
             setBackground(Color.gray);
-            setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+            setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
+            JLabel label = new JLabel("Outputs: ");
+            label.setForeground(Color.white);
+            add(label);
             for (int i = 1; i <= 6; i++) {
                 JPanel port = addPort("Input " + i, new Dimension(30, 30));
                 add(port);
@@ -262,7 +268,8 @@ public class PreAmp extends JFrame {
                     }
                 }
                 if (finished) {
-                    System.out.println("Hello");
+                    red.setForeground(new Color(80, 0, 0));
+                    green.setForeground(Color.green);
                 }
             } else if (selectedCable[0].equals(type)) {
                 selectedPort = ID;
