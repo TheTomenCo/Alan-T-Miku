@@ -1,5 +1,3 @@
-package src;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
@@ -8,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.sound.midi.*;
 import javax.swing.*; //java swing for gui like papa Alan asked.
+import java.awt.Color;
+import java.awt.GradientPaint;
 
 public class VisualGuitarKeyboard extends JFrame
         implements javax.swing.event.ChangeListener // JFrame adds support for swing component architecture i.e. lets
@@ -260,18 +260,46 @@ public class VisualGuitarKeyboard extends JFrame
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
 
-            g2.setColor(new Color(90, 60, 30));
-            g2.fillRect(0, 0, getWidth(), getHeight());
+            int bgWidth = getWidth();
+
+            // ---Base Wood Color ---///
+            g2.setColor(new Color(120, 80, 40));
+            g2.fillRect(0, 0, bgWidth, getHeight());
+
+            // --- Wood Grain Effect--- //
+            g2.setStroke(new BasicStroke(1));
+            for (int y = 0; y < getHeight(); y += 4) {
+                int variation = (int) (Math.sin(y * 0.05) * 10);
+                g2.setColor(new Color(100 + variation, 60 + variation / 2, 30));
+                g2.drawLine(0, y, bgWidth, y + variation);
+            }
+
+            // --- Slight shading for depth --- //
+            GradientPaint shade = new GradientPaint(
+                    0, 0, new Color(0, 0, 0, 40),
+                    bgWidth, 0, new Color(0, 0, 0, 0));
+            g2.setPaint(shade);
+            g2.fillRect(0, 0, bgWidth, getHeight());
 
             g2.setColor(Color.LIGHT_GRAY);
             for (int i = 0; i < STRING_COUNT; i++) {
                 int y = FIRST_Y + i * SPACING;
+                int thickness = 2 + i;
                 if (i == lastString) {
                     g2.setColor(Color.WHITE);
+                    g2.setStroke(new BasicStroke(thickness));
+                    g2.drawLine(20, y, getWidth() - 20, y);
+                    continue;
                 }
-                g2.setStroke(new BasicStroke(2 + i));
+
+                // --- Create metallic string gradient---//
+                GradientPaint stringGradient = new GradientPaint(
+                        0, y - thickness, new Color(220, 220, 220),
+                        0, y + thickness, new Color(120, 120, 120));
+
+                g2.setPaint(stringGradient);
+                g2.setStroke(new BasicStroke(thickness));
                 g2.drawLine(20, y, getWidth() - 20, y);
-                g2.setColor(Color.LIGHT_GRAY);
             }
 
             g2.setColor(Color.WHITE);
@@ -357,4 +385,5 @@ public class VisualGuitarKeyboard extends JFrame
         SwingUtilities.invokeLater(() -> new VisualGuitarKeyboard().setVisible(true));
         SwingUtilities.invokeLater(() -> new PreAmp().setVisible(true));
     }
+
 }
