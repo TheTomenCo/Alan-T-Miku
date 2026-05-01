@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Random;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
 import src.PreAmp.BottomPanel;
 import src.PreAmp.SecondaryPanel;
 import src.PreAmp.SidePanel;
@@ -18,8 +19,8 @@ public class PreAmp extends JFrame {
     private String[] cableTypes = { "TRS", "MIDI", "HDMI", "XLR", "RCA" };
     private String[] selectedCable = { "null", "null" };
     private int selectedPort = -1;
-    private JLabel green = new JLabel("■");
-    private JLabel red = green;
+    private int secretNumber;
+    public static boolean jackpot = false;
     public static boolean finished = false;
 
     public PreAmp() {
@@ -108,60 +109,57 @@ public class PreAmp extends JFrame {
         }
     }
 
-    JButton die, die1, die2, die3;
+    JButton die, die1, die2;
     int yeldie;
 
     class MainPanel extends JPanel {
         MainPanel() {
             setBackground(Color.darkGray);
-            setLayout(new FlowLayout(FlowLayout.LEFT, 10, 30));
+            setLayout(new FlowLayout(FlowLayout.CENTER, 30, 30));
             setBorder(new EmptyBorder(10, 10, 10, 10));
-
-            JLabel label = new JLabel("Inputs: ");
-            label.setForeground(Color.white);
-            add(label);
-            for (int i = 1; i <= 6; i++) {
-                JPanel port = addPort("Input " + i, new Dimension(30, 30));
-                port.setBackground(Color.gray);
-                add(port);
-            }
 
             yeldie = (int) (Math.random() * 6 + 1);
             die = addButton(Integer.toString(yeldie), new Dimension(50, 50));
             die.setBackground(Color.orange);
             die.setForeground(Color.black);
+            die.setFont(new Font("Arial", Font.PLAIN, 20));
             add(die);
 
             yeldie = (int) (Math.random() * 6 + 1);
             die1 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
             die1.setBackground(Color.orange);
             die1.setForeground(Color.black);
+            die1.setFont(new Font("Arial", Font.PLAIN, 20));
             add(die1);
 
             yeldie = (int) (Math.random() * 6 + 1);
             die2 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
             die2.setBackground(Color.orange);
             die2.setForeground(Color.black);
+            die2.setFont(new Font("Arial", Font.PLAIN, 20));
             add(die2);
-
-            yeldie = (int) (Math.random() * 6 + 1);
-            die3 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
-            die3.setBackground(Color.orange);
-            die3.setForeground(Color.black);
-            add(die3);
 
             JButton roller = addButton("Roll", new Dimension(100, 25));
             roller.setBackground(Color.white);
             roller.setForeground(Color.black);
             roller.addActionListener(e -> {
                 for (int i = 1; i <= 4; i++) {
-                    die1.setText(Integer.toString((int) (Math.random() * 6 + 1)));
                     die.setText(Integer.toString((int) (Math.random() * 6 + 1)));
+                    die1.setText(Integer.toString((int) (Math.random() * 6 + 1)));
                     die2.setText(Integer.toString((int) (Math.random() * 6 + 1)));
-                    die3.setText(Integer.toString((int) (Math.random() * 6 + 1)));
+                }
+
+                if (die.getText().equals(die1.getText()) && die.getText().equals(die2.getText())) {
+                    JOptionPane.showMessageDialog(this, "JACKPOT!!!!!!!!!!!!!!!!");
+                    jackpot = true;
                 }
             });
             add(roller);
+
+            for (int i = 1; i <= 6; i++) {
+                JPanel port = addPort("Output " + i, new Dimension(30, 30));
+                add(port);
+            }
         }
     }
 
@@ -169,21 +167,19 @@ public class PreAmp extends JFrame {
         SidePanel() {
             setBackground(Color.lightGray);
             setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-            green.setForeground(new Color(0, 70, 0));
-            add(green);
-            JLabel red = new JLabel("■");
-            red.setForeground(Color.red);
-            add(red);
+            JButton checkButton = addButton("Check", new Dimension(100, 100));
+            checkButton.addActionListener(e -> {
+                System.out.println(connections);
+                displayConnectionColors();
+            });
+            add(checkButton);
         }
     }
 
     class SecondaryPanel extends JPanel {
         public SecondaryPanel() {
             setBackground(Color.gray);
-            setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
-            JLabel label = new JLabel("Outputs: ");
-            label.setForeground(Color.white);
-            add(label);
+            setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
             for (int i = 1; i <= 6; i++) {
                 JPanel port = addPort("Input " + i, new Dimension(30, 30));
                 add(port);
@@ -268,8 +264,7 @@ public class PreAmp extends JFrame {
                     }
                 }
                 if (finished) {
-                    red.setForeground(new Color(80, 0, 0));
-                    green.setForeground(Color.green);
+                    System.out.println("Hello");
                 }
             } else if (selectedCable[0].equals(type)) {
                 selectedPort = ID;
@@ -317,6 +312,11 @@ public class PreAmp extends JFrame {
         JButton button = new JButton("Cable Box!!");
         button.setPreferredSize(new Dimension(100, 70));
         button.addActionListener(e -> {
+            if (jackpot == false) {
+                JOptionPane.showMessageDialog(this, "You must gamble first.");
+                return;
+            }
+
             Random random = new Random();
             selectedCable[0] = cableTypes[random.nextInt(cableTypes.length)];
             selectedCable[1] = cableTypes[random.nextInt(cableTypes.length)];
