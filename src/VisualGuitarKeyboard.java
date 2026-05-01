@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.sound.midi.*;
 import javax.swing.*;
-import javax.sound.sampled.*;
-import java.io.File;
+import java.awt.Color;
+import java.awt.GradientPaint;
 
 public class VisualGuitarKeyboard extends JFrame {
 
@@ -220,18 +220,54 @@ public class VisualGuitarKeyboard extends JFrame {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
 
-            g2.setColor(new Color(90, 60, 30));
-            g2.fillRect(0, 0, getWidth(), getHeight());
+            int bgWidth = getWidth();
+
+            //---Base Wood Color ---///
+            g2.setColor(new Color(120, 80, 40));
+            g2.fillRect(0, 0, bgWidth, getHeight());
+            
+
+            // --- Wood Grain Effect--- //
+            g2.setStroke(new BasicStroke(1));
+            for ( int y = 0; y < getHeight(); y +=4){
+                int variation = (int)(Math.sin(y * 0.05)*10);
+                g2.setColor(new Color(100+ variation, 60 + variation /2, 30));
+                g2.drawLine(0, y, bgWidth, y + variation);
+            }
+            
+            // --- Slight shading for depth --- //
+            GradientPaint shade = new GradientPaint(
+                0, 0, new Color(0, 0, 0, 40),
+                bgWidth, 0 , new Color(0, 0, 0, 0)
+            );
+            g2.setPaint(shade);
+            g2.fillRect(0, 0, bgWidth, getHeight());
+
+
+
 
             g2.setColor(Color.LIGHT_GRAY);
             for (int i = 0; i < STRING_COUNT; i++) {
                 int y = FIRST_Y + i * SPACING;
+                int thickness = 2 + i;
+
+                //---Hightlights string when played---//
                 if (i == lastString) {
                     g2.setColor(Color.WHITE);
+                    g2.setStroke(new BasicStroke(thickness));
+                    g2.drawLine(20, y , getWidth() - 20, y);
+                    continue;
                 }
-                g2.setStroke(new BasicStroke(2 + i));
+
+                //--- Create metallic string gradient---//
+                GradientPaint stringGradient = new GradientPaint(
+                    0, y - thickness, new Color(220,220,220),
+                    0, y + thickness, new Color(120,120,120)
+                );
+
+                g2.setPaint(stringGradient);
+                g2.setStroke(new BasicStroke(thickness));
                 g2.drawLine(20, y, getWidth() - 20, y);
-                g2.setColor(Color.LIGHT_GRAY);
             }
 
             g2.setColor(Color.WHITE);
@@ -318,96 +354,10 @@ public class VisualGuitarKeyboard extends JFrame {
     }
 
 
-    // ================= JUMPSCARE FEATURE =================
-
-public class JumpScare extends JFrame {
-
-    private Clip clip;
-    private static final double JUMPSCARE_CHANCE = 0.01;
-
-    public JumpScare() {
-        loadSound("sound.wav");
-
-        setUndecorated(true);
-        setSize(1, 1);
-        setOpacity(0f);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        addKeyListener(new KeyAdapter(){
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() !=KeyEvent.VK_Z) return;
-
-                if(Math.random() < JUMPSCARE_CHANCE) {
-                    playSound();
-                    showGif();
-                }
-            }
-        });
-
-        setVisible(true);
-    }
-
-    //---Loads the sound at 4x speed bc the original file is too long---//
-    private void loadSound(String path) {
-        try{
-            AudioInputStream original = AudioSystem.getAudioInputStream(new File(path));
-            AudioFormat base = original.getFormat();
-
-            AudioFormat fast = new AudioFormat(
-                base.getEncoding (),
-                base.getSampleRate()*4,
-                base.getSampleSizeInBits(),
-                base.getChannels(),
-                base.getFrameSize(),
-                base.getFrameRate() * 4,
-                base.isBigEndian()
-            );
-
-            AudioInputStream fastStream = AudioSystem.getAudioInputStream(fast, original);
-
-            clip = AudioSystem.getClip();
-            clip.open(fastStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void playSound() {
-        if (clip.isRunning()) clip.stop();
-        clip.setFramePosition(0);
-        clip.start();
-    }
-
-    //---Stretches the jumpscare gif to fill the entire screen---//
-
-    private void showGif() {
-        JFrame gifFrame = new JFrame();
-        gifFrame.setUndecorated(true);
-        gifFrame.setAlwaysOnTop(true);
-        gifFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-        ImageIcon icon = new ImageIcon("jumpscare.gif");
-
-        JPanel panel = new JPanel() {
-            @Override 
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.drawImage(icon.getImage(),0,0, getWidth(), getHeight(), this);
-
-            }
-        };
-
-        gifFrame.add(panel);
-        gifFrame.setVisible(true);
-
-        new Timer(30, e -> panel.repaint()).start();
-        new Timer(2000,e-> gifFrame.dispose()).start();
-    }
 
     
     }
     
-}
+
 
 
