@@ -7,9 +7,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.sound.midi.*;
-import javax.swing.*;
+import javax.swing.*; //java swing for gui like papa Alan asked.
 
-public class VisualGuitarKeyboard extends JFrame {
+public class VisualGuitarKeyboard extends JFrame //JFrame adds support for swing component architecture i.e. lets swing work lol
+{
 
     // ================= MIDI =================
 
@@ -26,7 +27,8 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= CONSTRUCTOR =================
 
-    public VisualGuitarKeyboard() {
+    public VisualGuitarKeyboard()
+    {
         setTitle("Guitar + Piano Instrument");
         setSize(730, 460);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -70,46 +72,59 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= MIDI =================
 
-    private void setupMidi() {
+    private void setupMidi()
+    {
 
-        try {
+        try
+        {
             Synthesizer synth = MidiSystem.getSynthesizer();
             synth.open();
             channel = synth.getChannels()[0];
             channel.programChange(0);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
 
     // ================= KEY MAP =================
 
-    private void setupKeyMap() {
+    private void setupKeyMap()
+    {
         String keys = "zsxdcvgbhnjmq2w3er5t6y7u";
         int note = 60;
 
-        for (char c : keys.toCharArray()) {
+        for (char c : keys.toCharArray())
+        {
             keyMap.put(c, note++);
         }
     }
 
     // ================= KEYBOARD INPUT =================
 
-    private void setupKeyboardInput() {
+    private void setupKeyboardInput()
+    {
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                .addKeyEventDispatcher(e -> {
+                .addKeyEventDispatcher(e ->
+                {
                     char k = Character.toLowerCase(e.getKeyChar());
                     if (!keyMap.containsKey(k))
                         return false;
 
                     int note = keyMap.get(k);
-                    if (e.getID() == KeyEvent.KEY_PRESSED) {
-                        if (!heldNotes.contains(note)) {
+                    if (e.getID() == KeyEvent.KEY_PRESSED)
+                    {
+                        if (!heldNotes.contains(note))
+                        {
                             heldNotes.add(note);
                             repaint();
                         }
-                    } else if (e.getID() == KeyEvent.KEY_RELEASED) {
-                        if (heldNotes.contains(note)) {
+                    }
+                    else if (e.getID() == KeyEvent.KEY_RELEASED)
+                    {
+                        if (heldNotes.contains(note))
+                        {
                             heldNotes.remove(note);
                             repaint();
                         }
@@ -120,11 +135,13 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= NOTE / VOLUME HANDLER =================
 
-    private void handleStringHit() {
+    private void handleStringHit()
+    {
         if (heldNotes.isEmpty())
             return;
 
-        if (volumeMode) {
+        if (volumeMode)
+        {
             // Only apply volume change to the most recently pressed note
             int lastNote = heldNotes.stream().reduce((first, second) -> second).orElse(-1);
             applyVolumeChange(lastNote);
@@ -132,11 +149,14 @@ public class VisualGuitarKeyboard extends JFrame {
         }
 
         int velocity = (int) (volume * 1.27);
-        for (int note : heldNotes) {
+        for (int note : heldNotes)
+        {
             channel.noteOn(note, velocity);
         }
-        new javax.swing.Timer(200, e -> {
-            for (int note : heldNotes) {
+        new javax.swing.Timer(200, e ->
+        {
+            for (int note : heldNotes)
+            {
                 channel.noteOff(note);
             }
         }).start();
@@ -144,10 +164,12 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= VOLUME MODE LOGIC =================
 
-    private void applyVolumeChange(int midiNote) {
+    private void applyVolumeChange(int midiNote)
+    {
         int noteClass = midiNote % 12;
 
-        int hexValue = switch (noteClass) {
+        int hexValue = switch (noteClass)
+        {
             case 0 -> 13; // C
             case 1 -> 13; // C#
             case 2 -> 14; // D
@@ -165,24 +187,28 @@ public class VisualGuitarKeyboard extends JFrame {
 
         volume += hexValue;
 
-        if (volume > 100) {
+        if (volume > 100)
+        {
             volume = 0;
         }
     }
 
     // ================= GUITAR PANEL =================
 
-    class GuitarPanel extends JPanel {
+    class GuitarPanel extends JPanel
+    {
 
         private final int STRING_COUNT = 5;
         private final int FIRST_Y = 100;
         private final int SPACING = 55;
         private int lastString = -1;
 
-        GuitarPanel() {
+        GuitarPanel()
+        {
             setPreferredSize(new Dimension(280, 420));
 
-            MouseAdapter mouse = new MouseAdapter() {
+            MouseAdapter mouse = new MouseAdapter()
+            {
                 @Override
                 public void mousePressed(MouseEvent e) {
                     handle(e.getY());
@@ -203,10 +229,13 @@ public class VisualGuitarKeyboard extends JFrame {
             addMouseMotionListener(mouse);
         }
 
-        private void handle(int y) {
-            for (int i = 0; i < STRING_COUNT; i++) {
+        private void handle(int y)
+        {
+            for (int i = 0; i < STRING_COUNT; i++)
+            {
                 int sy = FIRST_Y + i * SPACING;
-                if (Math.abs(y - sy) <= 8 && lastString != i) {
+                if (Math.abs(y - sy) <= 8 && lastString != i)
+                {
                     lastString = i;
                     super.repaint();
                     handleStringHit();
@@ -216,7 +245,8 @@ public class VisualGuitarKeyboard extends JFrame {
         }
 
         @Override
-        protected void paintComponent(Graphics g) {
+        protected void paintComponent(Graphics g)
+        {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
 
@@ -224,9 +254,11 @@ public class VisualGuitarKeyboard extends JFrame {
             g2.fillRect(0, 0, getWidth(), getHeight());
 
             g2.setColor(Color.LIGHT_GRAY);
-            for (int i = 0; i < STRING_COUNT; i++) {
+            for (int i = 0; i < STRING_COUNT; i++)
+            {
                 int y = FIRST_Y + i * SPACING;
-                if (i == lastString) {
+                if (i == lastString)
+                {
                     g2.setColor(Color.WHITE);
                 }
                 g2.setStroke(new BasicStroke(2 + i));
@@ -244,14 +276,16 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= PIANO PANEL =================
 
-    class PianoPanel extends JPanel {
+    class PianoPanel extends JPanel
+    {
 
         PianoPanel() {
             setBackground(Color.DARK_GRAY);
         }
 
         @Override
-        protected void paintComponent(Graphics g) {
+        protected void paintComponent(Graphics g)
+        {
             super.paintComponent(g);
             keyRects.clear();
             Graphics2D g2 = (Graphics2D) g;
@@ -259,10 +293,13 @@ public class VisualGuitarKeyboard extends JFrame {
             drawOctave(g2, "q2w3er5t6y7u", 40, 30);
             drawOctave(g2, "zsxdcvgbhnjm", 40, 210);
 
-            if (!heldNotes.isEmpty()) {
-                keyRects.forEach((k, r) -> {
+            if (!heldNotes.isEmpty())
+            {
+                keyRects.forEach((k, r) ->
+                {
                     Integer note = keyMap.get(k);
-                    if (heldNotes.contains(note)) {
+                    if (heldNotes.contains(note))
+                    {
                         g2.setColor(new Color(255, 0, 0, 120));
                         g2.fill(r);
                     }
@@ -270,14 +307,16 @@ public class VisualGuitarKeyboard extends JFrame {
             }
         }
 
-        private void drawOctave(Graphics2D g2, String keys, int x0, int y0) {
+        private void drawOctave(Graphics2D g2, String keys, int x0, int y0)
+        {
             int wW = 50, wH = 140, bW = 30, bH = 90;
             int[] wIdx = { 0, 2, 4, 5, 7, 9, 11 };
             int[] bIdx = { 1, 3, -1, 6, 8, 10 };
 
             int x = x0;
 
-            for (int i : wIdx) {
+            for (int i : wIdx)
+            {
                 char k = keys.charAt(i);
                 g2.setColor(Color.WHITE);
                 g2.fillRect(x, y0, wW, wH);
@@ -289,8 +328,10 @@ public class VisualGuitarKeyboard extends JFrame {
             }
 
             x = x0 + wW - bW / 2;
-            for (int i : bIdx) {
-                if (i == -1) {
+            for (int i : bIdx)
+            {
+                if (i == -1)
+                {
                     x += wW;
                     continue;
                 }
@@ -313,7 +354,8 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= MAIN =================
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         SwingUtilities.invokeLater(() -> new VisualGuitarKeyboard().setVisible(true));
     }
 }
