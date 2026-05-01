@@ -20,6 +20,7 @@ public class PreAmp extends JFrame {
     private String[] selectedCable = { "null", "null" };
     private int selectedPort = -1;
     private int secretNumber;
+    public static boolean jackpot = false;
     public static boolean finished = false;
 
     public PreAmp() {
@@ -108,7 +109,7 @@ public class PreAmp extends JFrame {
         }
     }
 
-    JButton die, die1, die2, die3;
+    JButton die, die1, die2;
     int yeldie;
 
     class MainPanel extends JPanel {
@@ -121,35 +122,36 @@ public class PreAmp extends JFrame {
             die = addButton(Integer.toString(yeldie), new Dimension(50, 50));
             die.setBackground(Color.orange);
             die.setForeground(Color.black);
+            die.setFont(new Font("Arial", Font.PLAIN, 20));
             add(die);
 
             yeldie = (int) (Math.random() * 6 + 1);
             die1 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
             die1.setBackground(Color.orange);
             die1.setForeground(Color.black);
+            die1.setFont(new Font("Arial", Font.PLAIN, 20));
             add(die1);
 
             yeldie = (int) (Math.random() * 6 + 1);
             die2 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
             die2.setBackground(Color.orange);
             die2.setForeground(Color.black);
+            die2.setFont(new Font("Arial", Font.PLAIN, 20));
             add(die2);
-
-            yeldie = (int) (Math.random() * 6 + 1);
-            die3 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
-            die3.setBackground(Color.orange);
-            die3.setForeground(Color.black);
-            add(die3);
 
             JButton roller = addButton("Roll", new Dimension(100, 25));
             roller.setBackground(Color.white);
             roller.setForeground(Color.black);
             roller.addActionListener(e -> {
                 for (int i = 1; i <= 4; i++) {
-                    die1.setText(Integer.toString((int) (Math.random() * 6 + 1)));
                     die.setText(Integer.toString((int) (Math.random() * 6 + 1)));
+                    die1.setText(Integer.toString((int) (Math.random() * 6 + 1)));
                     die2.setText(Integer.toString((int) (Math.random() * 6 + 1)));
-                    die3.setText(Integer.toString((int) (Math.random() * 6 + 1)));
+                }
+
+                if (die.getText().equals(die1.getText()) && die.getText().equals(die2.getText())) {
+                    JOptionPane.showMessageDialog(this, "JACKPOT!!!!!!!!!!!!!!!!");
+                    jackpot = true;
                 }
             });
             add(roller);
@@ -310,6 +312,11 @@ public class PreAmp extends JFrame {
         JButton button = new JButton("Cable Box!!");
         button.setPreferredSize(new Dimension(100, 70));
         button.addActionListener(e -> {
+            if (jackpot == false) {
+                JOptionPane.showMessageDialog(this, "You must gamble first.");
+                return;
+            }
+
             Random random = new Random();
             selectedCable[0] = cableTypes[random.nextInt(cableTypes.length)];
             selectedCable[1] = cableTypes[random.nextInt(cableTypes.length)];
