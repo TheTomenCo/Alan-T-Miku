@@ -16,10 +16,13 @@ public class PreAmp extends JFrame
     private String[] cableTypes = { "TRS", "MIDI", "HDMI", "XLR", "RCA" };
     private String[] selectedCable = { "null", "null" };
     private int selectedPort = -1;
+    public static boolean finished = false; 
 
     public PreAmp()
     {
         setTitle("Pre amp");
+        setResizable(false);
+        setUndecorated(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -234,6 +237,19 @@ public class PreAmp extends JFrame
                 selectedCable[1] = "null";
                 selectedPort = -1;
                 repaint();
+                if (connections.size() == 6){
+                    finished = true;
+                    for (int i = 1; i < 12; i++) {
+                        if (connections.get(i) != null) {
+                            if (!((connections.get(i) <= 6 && i >= 7) || (connections.get(i) >= 7 && i <= 6))){
+                                finished = false;
+                            }
+                        }
+                    }
+                } 
+                if (finished){
+                    System.out.println("Hello");
+                }
             }
             else if (selectedCable[0].equals(type))
             {
@@ -295,9 +311,5 @@ public class PreAmp extends JFrame
             selectedPort = -1;
         });
         return button;
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new PreAmp().setVisible(true));
     }
 }

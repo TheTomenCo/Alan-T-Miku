@@ -151,7 +151,9 @@ public class VisualGuitarKeyboard extends JFrame //JFrame adds support for swing
         int velocity = (int) (volume * 1.27);
         for (int note : heldNotes)
         {
-            channel.noteOn(note, velocity);
+            if (PreAmp.finished){
+                channel.noteOn(note, velocity);
+            }
         }
         new javax.swing.Timer(200, e ->
         {
@@ -357,5 +359,6 @@ public class VisualGuitarKeyboard extends JFrame //JFrame adds support for swing
     public static void main(String[] args)
     {
         SwingUtilities.invokeLater(() -> new VisualGuitarKeyboard().setVisible(true));
+        SwingUtilities.invokeLater(() -> new PreAmp().setVisible(true));
     }
 }
