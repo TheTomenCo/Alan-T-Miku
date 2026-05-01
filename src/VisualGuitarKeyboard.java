@@ -1,3 +1,5 @@
+package src;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
@@ -10,6 +12,9 @@ import java.awt.geom.AffineTransform;
 
 public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swing component architecture i.e. lets swing
                                                  // work lol
+public class VisualGuitarKeyboard extends JFrame
+        implements javax.swing.event.ChangeListener // JFrame adds support for swing component architecture i.e. lets
+                                                    // swing work lol
 {
 
     // ================= MIDI =================
@@ -24,6 +29,7 @@ public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swin
     private final Map<Character, Integer> keyMap = new HashMap<>();
     private final Map<Character, Rectangle> keyRects = new HashMap<>();
     private final Map<Integer, Integer> offsetCounts = new HashMap<>();
+    private int octaveOffset = 0;
 
     // ================= CONSTRUCTOR =================
 
@@ -46,8 +52,8 @@ public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swin
 
     private JSlider addOctaveSlider() {
         JSlider octaveSlider = new JSlider(JSlider.HORIZONTAL,
-                -3, 3, 0);
-        // framesPerSecond.addChangeListener(this);
+                -2, 2, 0);
+        octaveSlider.addChangeListener(this);
 
         // Turn on labels at major tick marks.
         octaveSlider.setMajorTickSpacing(1);
@@ -106,6 +112,15 @@ public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swin
         }
     }
 
+    // ================= CHANGE LISTENER =================
+
+    @Override
+    public void stateChanged(javax.swing.event.ChangeEvent e) {
+        if (e.getSource() instanceof JSlider slider) {
+            octaveOffset = slider.getValue() * 12;
+        }
+    }
+
     // ================= KEY MAP =================
 
     private void setupKeyMap() {
@@ -126,7 +141,7 @@ public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swin
                     if (!keyMap.containsKey(k))
                         return false;
 
-                    int note = keyMap.get(k);
+                    int note = keyMap.get(k) + octaveOffset;
                     if (e.getID() == KeyEvent.KEY_PRESSED) {
                         if (!heldNotes.contains(note)) {
                             heldNotes.add(note);
@@ -157,13 +172,17 @@ public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swin
 
         int velocity = (int) (volume * 1.27);
         for (int note : heldNotes) {
+            int pitchedNote = note + octaveOffset;
             if (PreAmp.finished) {
-                channel.noteOn(note, velocity);
+                channel.noteOn(pitchedNote, velocity);
             }
         }
-        new javax.swing.Timer(200, e -> {
+        new javax.swing.Timer(200, e ->
+
+        {
             for (int note : heldNotes) {
-                channel.noteOff(note);
+                int pitchedNote = note + octaveOffset;
+                channel.noteOff(pitchedNote);
             }
         }).start();
     }
@@ -243,6 +262,7 @@ public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swin
 
         @Override
         protected void paintComponent(Graphics g) {
+        protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
 
@@ -253,11 +273,16 @@ public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swin
             int bgWidth = getWidth();
 
             // ---Base Wood Color ---///
+            // ---Base Wood Color ---///
             g2.setColor(new Color(120, 80, 40));
             g2.fillRect(0, 0, bgWidth, getHeight());
+
            
             // --- Wood Grain Effect--- //
             g2.setStroke(new BasicStroke(1));
+            for (int y = 0; y < getHeight(); y += 4) {
+                int variation = (int) (Math.sin(y * 0.05) * 10);
+                g2.setColor(new Color(100 + variation, 60 + variation / 2, 30));
             for (int y = 0; y < getHeight(); y += 4) {
                 int variation = (int) (Math.sin(y * 0.05) * 10);
                 g2.setColor(new Color(
@@ -268,12 +293,21 @@ public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swin
                 g2.drawLine(0, y, bgWidth, y + variation);
             }
 
+            // --- Slight shading for depth --- //
+            GradientPaint shade = new GradientPaint(
+                    0, 0, new Color(0, 0, 0, 40),
+                    bgWidth, 0, new Color(0, 0, 0, 0));
+            g2.setPaint(shade);
+
             // --- Shading --- //
             g2.setPaint(new GradientPaint(
                 0, 0, new Color(0, 0, 0, 40), 
                 bgWidth, 0, new Color(0, 0, 0, 0)
             ));
             g2.fillRect(0, 0, bgWidth, getHeight());
+
+            g2.setColor(Color.LIGHT_GRAY);
+            for (int i = 0; i < STRING_COUNT; i++) {
 
             // --- Hole---//
             
@@ -333,10 +367,17 @@ public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swin
                 if (i == lastString) {
                     g2.setColor(Color.WHITE);
                     g2.setStroke(new BasicStroke(thickness));
+                    g2.drawLine(20, y, getWidth() - 20, y);
                     g2.drawLine(0, y, getWidth(), y);
                     continue;
                 }
 
+                // --- Create metallic string gradient---//
+                GradientPaint stringGradient = new GradientPaint(
+                        0, y - thickness, new Color(220, 220, 220),
+                        0, y + thickness, new Color(120, 120, 120));
+
+                g2.setPaint(stringGradient);
                 g2.setPaint(new GradientPaint(
                     0, y - thickness, new Color(220, 220, 220), 
                     0, y + thickness, new Color(120, 120, 120)
@@ -376,7 +417,7 @@ public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swin
 
             if (!heldNotes.isEmpty()) {
                 keyRects.forEach((k, r) -> {
-                    Integer note = keyMap.get(k);
+                    Integer note = keyMap.get(k) + octaveOffset;
                     if (heldNotes.contains(note)) {
                         g2.setColor(new Color(255, 0, 0, 120));
                         g2.fill(r);
