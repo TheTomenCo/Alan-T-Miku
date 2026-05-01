@@ -10,8 +10,6 @@ import javax.sound.midi.*;
 import javax.swing.*; //java swing for gui like papa Alan asked.
 import java.awt.geom.AffineTransform;
 
-public class VisualGuitarKeyboard extends JFrame // JFrame adds support for swing component architecture i.e. lets swing
-                                                 // work lol
 public class VisualGuitarKeyboard extends JFrame
         implements javax.swing.event.ChangeListener // JFrame adds support for swing component architecture i.e. lets
                                                     // swing work lol
@@ -262,34 +260,20 @@ public class VisualGuitarKeyboard extends JFrame
 
         @Override
         protected void paintComponent(Graphics g) {
-        protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
-
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
 
             int bgWidth = getWidth();
 
             // ---Base Wood Color ---///
-            // ---Base Wood Color ---///
             g2.setColor(new Color(120, 80, 40));
             g2.fillRect(0, 0, bgWidth, getHeight());
 
-           
             // --- Wood Grain Effect--- //
             g2.setStroke(new BasicStroke(1));
             for (int y = 0; y < getHeight(); y += 4) {
                 int variation = (int) (Math.sin(y * 0.05) * 10);
                 g2.setColor(new Color(100 + variation, 60 + variation / 2, 30));
-            for (int y = 0; y < getHeight(); y += 4) {
-                int variation = (int) (Math.sin(y * 0.05) * 10);
-                g2.setColor(new Color(
-                    110 + variation, 
-                    70 + variation / 2,
-                    35
-            ));
                 g2.drawLine(0, y, bgWidth, y + variation);
             }
 
@@ -298,25 +282,17 @@ public class VisualGuitarKeyboard extends JFrame
                     0, 0, new Color(0, 0, 0, 40),
                     bgWidth, 0, new Color(0, 0, 0, 0));
             g2.setPaint(shade);
-
-            // --- Shading --- //
-            g2.setPaint(new GradientPaint(
-                0, 0, new Color(0, 0, 0, 40), 
-                bgWidth, 0, new Color(0, 0, 0, 0)
-            ));
             g2.fillRect(0, 0, bgWidth, getHeight());
 
             g2.setColor(Color.LIGHT_GRAY);
-            for (int i = 0; i < STRING_COUNT; i++) {
 
             // --- Hole---//
-            
+
             int centerX = getWidth() / 2;
             int centerY = FIRST_Y + (STRING_COUNT / 2) * SPACING;
             int radius = 60;
 
-
-            //--- Rosette ---//
+            // --- Rosette ---//
             int tiles = 80;
             int ringRadius = radius + 10;
             int tileWidth = 5;
@@ -324,51 +300,44 @@ public class VisualGuitarKeyboard extends JFrame
 
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.85f));
 
-            for ( int i = 0; i < tiles; i++) {
+            for (int i = 0; i < tiles; i++) {
                 double angle = 2 * Math.PI * i / tiles;
 
-                int x = (int) ( centerX + ringRadius * Math.cos(angle));
-                int y = (int) ( centerY + ringRadius * Math.sin(angle));
+                int x = (int) (centerX + ringRadius * Math.cos(angle));
+                int y = (int) (centerY + ringRadius * Math.sin(angle));
 
                 AffineTransform old = g2.getTransform();
 
                 g2.translate(x, y);
                 g2.rotate(angle);
 
-
                 // --- Alternating coloring for pattern ---//
-                if ( i % 2 == 0) {
-                    g2.setColor(new Color(200,170,120)); //lighter
+                if (i % 2 == 0) {
+                    g2.setColor(new Color(200, 170, 120)); // lighter
                 } else {
-                    g2.setColor(new Color(90, 60, 30)); //darker
+                    g2.setColor(new Color(90, 60, 30)); // darker
                 }
 
-                
-
-              
-                g2.fillRoundRect(-tileWidth/2, tileHeight/2, tileWidth ,tileHeight, 5, 5); 
+                g2.fillRoundRect(-tileWidth / 2, tileHeight / 2, tileWidth, tileHeight, 5, 5);
 
                 g2.setTransform(old);
-            
 
-        }
+            }
 
             // ---Inner Hole---//
             g2.setColor(Color.BLACK);
-            g2.fillOval(centerX - radius, centerY - radius, 
-                        radius * 2, radius * 2);
+            g2.fillOval(centerX - radius, centerY - radius,
+                    radius * 2, radius * 2);
 
             // --- Strings---//
 
             for (int i = 0; i < STRING_COUNT; i++) {
                 int y = FIRST_Y + i * SPACING;
                 int thickness = 2 + i;
-
                 if (i == lastString) {
                     g2.setColor(Color.WHITE);
                     g2.setStroke(new BasicStroke(thickness));
                     g2.drawLine(20, y, getWidth() - 20, y);
-                    g2.drawLine(0, y, getWidth(), y);
                     continue;
                 }
 
@@ -378,17 +347,9 @@ public class VisualGuitarKeyboard extends JFrame
                         0, y + thickness, new Color(120, 120, 120));
 
                 g2.setPaint(stringGradient);
-                g2.setPaint(new GradientPaint(
-                    0, y - thickness, new Color(220, 220, 220), 
-                    0, y + thickness, new Color(120, 120, 120)
-                ));
-
                 g2.setStroke(new BasicStroke(thickness));
-                g2.drawLine(0, y, getWidth(), y);
-
+                g2.drawLine(20, y, getWidth() - 20, y);
             }
-
-
 
             g2.setColor(Color.WHITE);
             g2.drawString(
