@@ -43,6 +43,22 @@ public class VisualGuitarKeyboard extends JFrame {
 
     // ================= TOP BAR =================
 
+    private JSlider addOctaveSlider() {
+        JSlider octaveSlider = new JSlider(JSlider.HORIZONTAL,
+                -3, 3, 0);
+        // framesPerSecond.addChangeListener(this);
+
+        // Turn on labels at major tick marks.
+        octaveSlider.setMajorTickSpacing(1);
+        octaveSlider.setMinorTickSpacing(1);
+        octaveSlider.setPaintTicks(true);
+        octaveSlider.setPaintLabels(true);
+        octaveSlider.setSnapToTicks(true);
+        // octaveSlider.setPreferredSize(new Dimension(100, 10));
+
+        return octaveSlider;
+    }
+
     private JPanel createTopBar() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
@@ -51,6 +67,10 @@ public class VisualGuitarKeyboard extends JFrame {
                 new String[] { "Play Mode", "Volume Mode" });
 
         JLabel volumeLabel = new JLabel("Volume: 0");
+
+        JLabel octaveLabel = new JLabel("Octave");
+
+        JSlider octaveSlider = addOctaveSlider();
 
         modeSelect.addActionListener(e -> {
             volumeMode = modeSelect.getSelectedIndex() == 1;
@@ -64,6 +84,9 @@ public class VisualGuitarKeyboard extends JFrame {
         panel.add(modeSelect);
         panel.add(Box.createHorizontalStrut(20));
         panel.add(volumeLabel);
+        panel.add(Box.createHorizontalStrut(50));
+        panel.add(octaveLabel);
+        panel.add(octaveSlider);
 
         return panel;
     }
