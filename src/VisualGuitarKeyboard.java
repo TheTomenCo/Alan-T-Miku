@@ -1,3 +1,5 @@
+package src;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
@@ -170,11 +172,13 @@ public class VisualGuitarKeyboard extends JFrame
         int velocity = (int) (volume * 1.27);
         for (int note : heldNotes) {
             int pitchedNote = note + octaveOffset;
-            // if (PreAmp.finished) {
-            channel.noteOn(pitchedNote, velocity);
-            // }
+            if (PreAmp.finished) {
+                channel.noteOn(pitchedNote, velocity);
+            }
         }
-        new javax.swing.Timer(200, e -> {
+        new javax.swing.Timer(200, e ->
+
+        {
             for (int note : heldNotes) {
                 int pitchedNote = note + octaveOffset;
                 channel.noteOff(pitchedNote);
