@@ -1,6 +1,7 @@
 package src;
 
 import java.awt.*;
+import java.awt.geom.Line2D;
 import java.util.HashMap;
 import java.util.Random;
 import javax.swing.*;
@@ -19,9 +20,12 @@ public class PreAmp extends JFrame {
     private String[] selectedCable = { "null", "null" };
     private int selectedPort = -1;
     private int secretNumber;
+    public static boolean finished = false;
 
     public PreAmp() {
         setTitle("Pre amp");
+        setResizable(false);
+        setUndecorated(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -73,6 +77,7 @@ public class PreAmp extends JFrame {
         JPanel BottomPanel = new BottomPanel();
         BottomPanel.add(cableLabel);
         add(BottomPanel, c);
+        super.paint(getGraphics());
 
         pack();
     }
@@ -85,57 +90,69 @@ public class PreAmp extends JFrame {
         }
     }
 
-    
+    @Override
+    public void paint(Graphics g) {
+        super.paint(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(6));
+        Point p1;
+        Point p2;
+        for (int i = 1; i <= 12; i++) {
+            if (connections.get(i) != null) {
+                g2.setColor(cableColors.get(ports.get(i)));
+                p1 = portButtons.get(connections.get(i)).getLocationOnScreen();
+                p2 = portButtons.get(i).getLocationOnScreen();
+                Line2D lin = new Line2D.Float(p1.x + 15, p1.y + 15, p2.x + 15, p2.y + 15);
+                g2.draw(lin);
+            }
+        }
+    }
+
     JButton die, die1, die2, die3;
     int yeldie;
+
     class MainPanel extends JPanel {
         MainPanel() {
             setBackground(Color.darkGray);
             setLayout(new FlowLayout(FlowLayout.CENTER, 30, 30));
             setBorder(new EmptyBorder(10, 10, 10, 10));
-            
 
+            yeldie = (int) (Math.random() * 6 + 1);
+            die = addButton(Integer.toString(yeldie), new Dimension(50, 50));
+            die.setBackground(Color.orange);
+            die.setForeground(Color.black);
+            add(die);
 
-            
-                yeldie=(int)(Math.random()*6+1);
-                die = addButton(Integer.toString(yeldie), new Dimension(50, 50));
-                die.setBackground(Color.orange);
-                die.setForeground(Color.black);
-                add(die);
-            
-                yeldie=(int)(Math.random()*6+1);
-                die1 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
-                die1.setBackground(Color.orange);
-                die1.setForeground(Color.black);
-                add(die1);
+            yeldie = (int) (Math.random() * 6 + 1);
+            die1 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
+            die1.setBackground(Color.orange);
+            die1.setForeground(Color.black);
+            add(die1);
 
-                yeldie=(int)(Math.random()*6+1);
-                die2 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
-                die2.setBackground(Color.orange);
-                die2.setForeground(Color.black);
-                add(die2);
-            
-                yeldie=(int)(Math.random()*6+1);
-                die3 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
-                die3.setBackground(Color.orange);
-                die3.setForeground(Color.black);
-                add(die3);
-            
-                JButton roller = addButton("Roll", new Dimension(100, 25));
-                roller.setBackground(Color.white);
-                roller.setForeground(Color.black);
-                roller.addActionListener(e -> {
-                    for (int i = 1; i <= 4; i++) {
-                    die1.setText(Integer.toString((int)(Math.random()*6+1)));
-                    die.setText(Integer.toString((int)(Math.random()*6+1)));
-                    die2.setText(Integer.toString((int)(Math.random()*6+1)));
-                    die3.setText(Integer.toString((int)(Math.random()*6+1)));
-                    }
-                });
-                add(roller);            
+            yeldie = (int) (Math.random() * 6 + 1);
+            die2 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
+            die2.setBackground(Color.orange);
+            die2.setForeground(Color.black);
+            add(die2);
 
-            
+            yeldie = (int) (Math.random() * 6 + 1);
+            die3 = addButton(Integer.toString(yeldie), new Dimension(50, 50));
+            die3.setBackground(Color.orange);
+            die3.setForeground(Color.black);
+            add(die3);
 
+            JButton roller = addButton("Roll", new Dimension(100, 25));
+            roller.setBackground(Color.white);
+            roller.setForeground(Color.black);
+            roller.addActionListener(e -> {
+                for (int i = 1; i <= 4; i++) {
+                    die1.setText(Integer.toString((int) (Math.random() * 6 + 1)));
+                    die.setText(Integer.toString((int) (Math.random() * 6 + 1)));
+                    die2.setText(Integer.toString((int) (Math.random() * 6 + 1)));
+                    die3.setText(Integer.toString((int) (Math.random() * 6 + 1)));
+                }
+            });
+            add(roller);
 
             for (int i = 1; i <= 6; i++) {
                 JPanel port = addPort("Output " + i, new Dimension(30, 30));
@@ -185,6 +202,8 @@ public class PreAmp extends JFrame {
                 selectedPort = -1;
                 selectedCable[0] = "null";
                 selectedCable[1] = "null";
+                finished = false;
+                getTopLevelAncestor().repaint();
             });
             add(resetButton, BorderLayout.EAST);
         }
@@ -231,6 +250,20 @@ public class PreAmp extends JFrame {
                 selectedCable[0] = "null";
                 selectedCable[1] = "null";
                 selectedPort = -1;
+                repaint();
+                if (connections.size() == 6) {
+                    finished = true;
+                    for (int i = 1; i < 12; i++) {
+                        if (connections.get(i) != null) {
+                            if (!((connections.get(i) <= 6 && i >= 7) || (connections.get(i) >= 7 && i <= 6))) {
+                                finished = false;
+                            }
+                        }
+                    }
+                }
+                if (finished) {
+                    System.out.println("Hello");
+                }
             } else if (selectedCable[0].equals(type)) {
                 selectedPort = ID;
             }
