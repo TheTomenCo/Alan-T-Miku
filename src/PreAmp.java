@@ -190,6 +190,7 @@ public class PreAmp extends JFrame
                 selectedPort = -1;
                 selectedCable[0] = "null";
                 selectedCable[1] = "null";
+                finished = false;
                 getTopLevelAncestor().repaint();
             });
             add(resetButton, BorderLayout.EAST);
